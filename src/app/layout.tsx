@@ -4,7 +4,6 @@ import "./globals.css";
 import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { SquareArrowUpRight } from "lucide-react";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,7 +36,6 @@ export default function RootLayout({
               <Link href="/" className="font-semibold">Upload</Link>
               <Link href="/annotate" className="text-muted-foreground hover:text-foreground">
                 Annotate
-                <SquareArrowUpRight/>
               </Link>
             </nav>
 

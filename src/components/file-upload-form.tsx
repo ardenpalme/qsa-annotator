@@ -108,6 +108,7 @@ export function S3UploadForm() {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const formData = new FormData()
+    formData.append("folder", data.folder)
     data.files.forEach((file) => formData.append("files",file))
     await fetch("/api/files", {
       method: "Post",
