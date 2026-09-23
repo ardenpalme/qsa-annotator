@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      { source: "/annotate", destination: "http://localhost:8080", permanent: false },
+    ]
+  },
 };
 
 export default nextConfig;
