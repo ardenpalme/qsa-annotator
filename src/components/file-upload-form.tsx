@@ -107,23 +107,40 @@ export function S3UploadForm() {
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const formData = new FormData()
-    formData.append("folder", data.folder)
-    data.files.forEach((file) => formData.append("files",file))
-    await fetch("/api/files", {
-      method: "Post",
-      body: formData,
-    })
-    setObjs((prev) => [...prev, ...data.files.map((f) => data.folder + f.name)])
-    form.resetField("files")
+    const res = await fetch("/api/files", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        names: data.files.map((f) => f.name),
+        folder: data.folder,
+      }),
+    });
+    if (!res.ok) throw new Error(`Presign failed: ${res.status}`);
+    const { urls } = (await res.json()) as { urls: string[] };
+
+    const puts = await Promise.all(
+      data.files.map((f, i) => fetch(urls[i], { method: "PUT", body: f })),
+    );
+    const failed = puts.filter((r) => !r.ok);
+    if (failed.length) throw new Error(`${failed.length} upload(s) failed`);
+
+    const list = await fetch("/api/files");
+    if (list.ok) {
+      const { keys } = (await list.json()) as { keys: string[] };
+      setObjs(keys);
+    }
+
+    form.resetField("files");
   }
 
   const [objs, setObjs] = React.useState<string[]>([])
   React.useEffect(() => {
     async function load () {
-      const res = await fetch('/api/files', { method: "Get" })
-      const data = await res.json()
-      setObjs(data.keys)
+      const list = await fetch("/api/files");
+      if (list.ok) {
+        const { keys } = (await list.json()) as { keys: string[] };
+        setObjs(keys);
+      }
     }
     load()
   },[])
