@@ -4,6 +4,7 @@ import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
+import { useAuth } from '@clerk/nextjs'
 
 import { Button } from "@/components/ui/button"
 
@@ -98,6 +99,9 @@ const formSchema = z.object({
 })
 
 export function S3UploadForm() {
+  const { isLoaded, isSignedIn } = useAuth()
+
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -146,6 +150,13 @@ export function S3UploadForm() {
   },[])
 
   const folders = React.useMemo(() => listFolders(objs), [objs])
+
+  if (!isLoaded) return <h1>Loading...</h1>
+  if (!isSignedIn) {
+    // Add logic to handle the unauthenticated user
+    // This example renders a UI but you could also redirect to the sign-in page instead
+    return <h1>You must be signed in to view this page</h1>
+  }
 
   return (
       <Card className="w-full sm:max-w-md">

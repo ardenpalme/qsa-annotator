@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { NextResponse } from "next/server"
 import {
   S3Client,
   PutObjectCommand,
@@ -14,8 +13,7 @@ const s3 = new S3Client({
 });
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  const { userId } = await auth.protect()
 
   const { names, folder = "" } = (await request.json()) as { names: string[]; folder?: string };
   const urls = await Promise.all(
@@ -30,10 +28,8 @@ export async function POST(request: Request) {
   return Response.json({ urls });
 }
 
-
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  const { userId } = await auth.protect()
   const cli = new S3Client({ forcePathStyle: true });
   const res = await cli.send(new ListObjectsV2Command({ Bucket: 'floor-plans' }))
   return Response.json({ keys: (res.Contents ?? []).map((o) => o.Key) })
