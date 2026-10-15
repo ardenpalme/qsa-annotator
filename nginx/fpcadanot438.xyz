@@ -1,0 +1,45 @@
+ubuntu@ip-172-31-23-184:~$ sudo cat /etc/nginx/sites-available/fpcadanot438.xyz
+server {
+
+    server_name fpcadanot438.xyz www.fpcadanot438.xyz;
+    client_max_body_size 0;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        include proxy_params;
+	proxy_set_header Host $host;
+	proxy_set_header X-Forwarded-Host $host;
+	proxy_set_header X-Forwarded-Proto $scheme;
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/fpcadanot438.xyz/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/fpcadanot438.xyz/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+server {
+    if ($host = www.fpcadanot438.xyz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = fpcadanot438.xyz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    listen [::]:80;
+
+    server_name fpcadanot438.xyz www.fpcadanot438.xyz;
+    return 404; # managed by Certbot
+
+
+
+
+}
