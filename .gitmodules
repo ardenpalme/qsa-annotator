@@ -1,0 +1,4 @@
+[submodule "cvat"]
+	path = cvat
+	url = https://github.com/ardenpalme/cvat.git
+	branch = develop

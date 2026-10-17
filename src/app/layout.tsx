@@ -34,9 +34,9 @@ export default function RootLayout({
           <header className="flex justify-between items-center p-4 gap-4 h-12 border-b">
             <nav className="flex items-center gap-6 text-lg font-medium">
               <Link href="/" className="font-semibold">Upload</Link>
-              <Link href="/api/cvat-gate" className="text-muted-foreground hover:text-foreground">
+              <a href="https://cvat.fpcadanot438.xyz" className="text-muted-foreground hover:text-foreground">
                 Annotate
-              </Link>
+              </a>
             </nav>
 
             <div className="flex items-center gap-4">

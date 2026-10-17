@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   async redirects() {
     return [
-      { source: "/annotate", destination: "http://localhost:8080", permanent: false },
+      { source: "/annotate", destination: "https://cvat.fpcadanot438.xyz", permanent: false },
     ]
   },
 };
