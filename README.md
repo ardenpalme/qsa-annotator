@@ -123,6 +123,3 @@ From your machine, `curl -m 5 http://<Elastic IP>:8080` must time out.
 ### Updating
 - CVAT: `git pull --recurse-submodules`, then rerun the `docker compose ... up -d` from step 2.
 - App: `pnpm build && ./deploy.sh`, unpack as in step 3, then `sudo systemctl restart qsa-annotator`.
-
-## TODO
-* Add functionality to select folder then press Browze ro upload to that folder
