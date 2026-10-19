@@ -1,0 +1,14 @@
+[Unit]
+Description=qsa-annotator Next.js app
+After=network.target
+
+[Service]
+User=annotator
+WorkingDirectory=/home/annotator/deploy
+Environment=NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1
+EnvironmentFile=/etc/qsa-annotator.env
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

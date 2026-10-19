@@ -1,0 +1,63 @@
+#cloud-config
+# Hetzner Cloud user data (Ubuntu 24.04), based on
+# https://community.hetzner.com/tutorials/basic-cloud-config/
+# Base system only; app setup is in the README. Replace <public_ssh_key>.
+
+users:
+  - name: annotator
+    groups: users, admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - <public_ssh_key>
+
+swap:
+  filename: /swapfile
+  size: 4G
+  maxsize: 4G
+
+package_update: true
+package_upgrade: true
+packages:
+  - fail2ban
+  - ufw
+  - git
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/ssh-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      Port 2222
+      KbdInteractiveAuthentication no
+      ChallengeResponseAuthentication no
+      MaxAuthTries 2
+      AllowTcpForwarding no
+      X11Forwarding no
+      AllowAgentForwarding no
+      AuthorizedKeysFile .ssh/authorized_keys
+      AllowUsers annotator
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port = ssh, 2222
+      banaction = iptables-multiport
+
+runcmd:
+  - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  - apt-get install -y nodejs
+  - usermod -aG docker annotator
+  - systemctl enable fail2ban
+  - ufw allow 2222/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+power_state:
+  mode: reboot
