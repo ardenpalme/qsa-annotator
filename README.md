@@ -58,14 +58,10 @@ sudo systemctl daemon-reload && sudo systemctl enable qsa-annotator
 
 ### 2. Secrets and CVAT
 ```sh
-sudo install -m 600 -o annotator /dev/null /etc/qsa-annotator.env
-nano /etc/qsa-annotator.env      # CLERK_SECRET_KEY, AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID,
-                                 # AWS_SECRET_ACCESS_KEY, AWS_REGION, BUCKET
-cd ~/qsa-annotator/cvat
-cat > .env <<'EOF'
-CVAT_HOST=cvat.fpcadanot438.xyz
-CVAT_POSTGRES_PASSWORD=<Neon password>
-EOF
+sudo vim /etc/qsa-annotator.env      # CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY 
+                                     # AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, BUCKET
+chmod 600 /etc/qsa-annotator.env
+vim ~/qsa-annotator/cvat             # CVAT_HOST=cvat.fpcadanot438.xyz, CVAT_POSTGRES_PASSWORD=<Neon password>
 chmod 600 .env
 docker compose -f docker-compose.yml -f docker-compose.external_db.yml up -d
 docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
@@ -85,15 +81,14 @@ pnpm install && pnpm build       # NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is baked in
 
 On the server, unpack the upload and start the app (it listens on `127.0.0.1:3000` only):
 ```sh
-cd ~/deploy && tar xzf deploy.tar.gz && rm deploy.tar.gz
+cd ~/deploy && tar xzf deploy.tar.gz && rm deploy.tar.gz .env
 sudo systemctl start qsa-annotator
 ```
 
 ### 4. TLS
 Once DNS points to the server:
 ```sh
-sudo certbot --nginx --redirect -d fpcadanot438.xyz -d www.fpcadanot438.xyz
-sudo certbot --nginx --redirect -d cvat.fpcadanot438.xyz
+sudo certbot --nginx --redirect -d fpcadanot438.xyz -d cvat.fpcadanot438.xyz
 ```
 Certbot installs a renewal timer (`systemctl list-timers | grep certbot`).
 
