@@ -60,6 +60,7 @@ sudo systemctl daemon-reload && sudo systemctl enable qsa-annotator
 ```sh
 sudo vim /etc/qsa-annotator.env      # CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY 
                                      # AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, BUCKET
+                                     # CVAT_URL, CVAT_ACCESS_TOKEN, CVAT_WEBHOOK_SECRET (see "Auto-export")
 chmod 600 /etc/qsa-annotator.env
 vim ~/qsa-annotator/cvat             # CVAT_HOST=cvat.fpcadanot438.xyz, CVAT_POSTGRES_PASSWORD=<Neon password>
 chmod 600 .env
@@ -103,6 +104,26 @@ sudo fail2ban-client status                      # jails: cvat-auth, sshd
 swapon --show                                    # /swapfile, 4G
 ```
 From your machine, `curl -m 5 http://<server IP>:8080` must time out.
+
+## Auto-export of completed jobs
+When a CVAT job's state is set to *completed*, CVAT calls the webhook `POST /api/cvat/webhook`. The app exports the
+job as *CVAT for images 1.1* (without images) and writes the `annotations.xml` from the export to
+`$BUCKET/datasets/private/annotations/<task name>_job_<job id>.xml`. Any later save of a completed job exports it
+again and overwrites the file.
+
+Variables, in `.env.local` locally and in `/etc/qsa-annotator.env` on the server (`.env.local` is not shipped):
+- `CVAT_URL=https://cvat.fpcadanot438.xyz`
+- `CVAT_ACCESS_TOKEN`: in CVAT, *user menu → Profile → Security → Personal Access Tokens*, create a token as a
+  user who can see the jobs. Untick *read only*: starting an export is a `POST`, which read-only tokens can't do.
+- `CVAT_WEBHOOK_SECRET`: any random string, e.g. `openssl rand -hex 32`.
+
+In CVAT, open the project (or organization) → *Actions → Setup webhooks* → *Create*:
+- Target URL `https://fpcadanot438.xyz/api/cvat/webhook` (the public URL: CVAT blocks webhooks to private IPs);
+- content type `application/json`, the same secret, SSL verification on;
+- events: *Select individual events* → `job`.
+
+Webhooks only fire for tasks in that project (or organization). Check deliveries on the webhook page
+(expect `202` for a completed job) and the export in `journalctl -u qsa-annotator | grep 'cvat webhook'`.
 
 ## fail2ban (brute-force protection for SSH and the CVAT login)
 fail2ban is a daemon that watches log files. Each *jail* pairs a *filter* (a regex that finds failure lines and pulls out
